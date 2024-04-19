@@ -21,7 +21,7 @@ repository               : "https://github.com/MostValue/MostValue.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile.png" #TODO
+  avatar           : "backgroundpic_1.png" #TODO
   name             : "Kerui Yang"
   pronouns         : # example: "she/her"  
   bio              : "Multi-modal Learning"
