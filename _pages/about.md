@@ -41,7 +41,7 @@ redirect_from:
   <img src="images/talk1.jpg" alt="Hosting a workshop" style="width: 45%">
   <img src="images/talk3.jpg" alt="Hosting a datathon" style="width: 45%"> 
 </div>
-<!-- 
+
 
 ### Reading, Reimplementing Research
 
