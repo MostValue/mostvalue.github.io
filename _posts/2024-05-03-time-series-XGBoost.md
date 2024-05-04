@@ -1,6 +1,6 @@
 ---
 title: "Time Series Analysis: Part 1"
-date: 2024-05-05
+date: 2024-05-03
 excerpt: "Learn the basics of time series analysis, with XGBoost"
 collection: blog
 permalink: /blog/time_series/part1
@@ -14,7 +14,10 @@ tags:
   - Project
 ---
 
-{% include toc.html %}
+{% include toc.html html=content %}
+
+* TOC
+{:toc}
 
 # Time series analysis using XGBoost
 
@@ -208,7 +211,7 @@ plt.show()
 
 
     
-![png](_posts/time-series-XGBoost/output_9_0.png)
+<img src="/assets/img/time-series-XGBoost/output_9_0.png" alt="">
     
 
 
@@ -233,7 +236,7 @@ plt.show()
 
 
     
-![png](_posts/time-series-XGBoost/output_12_0.png)
+<img src="/assets/img/time-series-XGBoost/output_12_0.png" alt="">
     
 
 
@@ -253,7 +256,7 @@ df.loc[(df.index >'01-01-2015') & (df.index < '01-07-2015')] \
 
 
     
-![png](_posts/time-series-XGBoost/output_13_1.png)
+<img src="/assets/img/time-series-XGBoost/output_13_1.png" alt="">
     
 
 
@@ -333,7 +336,7 @@ plt.tight_layout()
 
 
     
-![png](_posts/time-series-XGBoost/output_20_0.png)
+<img src="/assets/img/time-series-XGBoost/output_20_0.png" alt="">
     
 
 
@@ -356,7 +359,7 @@ ax3.set_title('MW by Month');
 
 
     
-![png](_posts/time-series-XGBoost/output_22_0.png)
+<img src="/assets/img/time-series-XGBoost/output_22_0.png" alt="">
     
 
 
@@ -443,9 +446,8 @@ plt.show()
 ```
 
 
-    
-![png](_posts/time-series-XGBoost/output_27_0.png)
-    
+
+<img src="/assets/img/time-series-XGBoost/output_27_0.png" alt="">
 
 
 # Forecasting

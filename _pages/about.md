@@ -43,7 +43,7 @@ redirect_from:
 </div>
 
 
-### Reading, Reimplementing Research
+### Reading and Reimplementing Research
 
 I've been taking the time to read, digest and then re-implement some cool research papers in the fields of bioinformatics, deep learning and medical imaging.
 

@@ -142,9 +142,11 @@ analytics:
 
 # Reading Files
 include:
+  - _img
   - .htaccess
   - _pages
   - files
+  - "img"
 exclude:
   - "*.sublime-project"
   - "*.sublime-workspace"
@@ -175,6 +177,10 @@ keep_files:
 encoding: "utf-8"
 markdown_ext: "markdown,mkdown,mkdn,mkd,md"
 
+toc:
+  enabled: true
+  h_min: 1
+  h_max: 3
 
 # Conversion
 markdown: kramdown
@@ -289,6 +295,7 @@ plugins:
   - jekyll-gist
   - jekyll-feed
   - jekyll-redirect-from
+  - jekyll-toc
 # mimic GitHub Pages with --safe
 whitelist:
   - jekyll-paginate
