@@ -118,7 +118,9 @@ $$
 $$
 
 
-Here, $\mathbf{z}$ represents the logits either conditioned on the concept we want to erase,$\mathbf{z}_{\mathrm{orig,cond}}$ or not conditioned  $\mathbf{z}_{\mathrm{orig,uncond}}$, and $\alpha$ (or `superfactor`) is a scalar that controls how strongly we want to erase the concept.
+Here, $\mathbf{z}$ represents the logits either conditioned on the concept we want to erase,
+$\mathbf{z}_{\mathrm{orig,cond}}$ or not conditioned $\mathbf{z}_{\mathrm{orig,uncond}}$, and 
+$\alpha$ (or superfactor) is a scalar that controls how strongly we want to erase the concept.
 
 My first experiment with this new loss function involved fine-tuning the *entire model*. The results were... not great. 
 
