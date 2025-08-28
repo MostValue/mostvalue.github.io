@@ -51,18 +51,21 @@ The project focused on **discrete diffusion models**, a class of models that are
 </div>
 
 > **Why discrete diffusion?**  
-> Discrete diffusion models are especially relevant for domains where data is naturally categorical—such as pixels, words, or amino acids. Unlike continuous models, they can directly handle the inherent structure of these datasets, making them powerful tools for applications like protein design (RF Diffusion [cite: rf-diffusion]) and molecular generation (Gemeni Diffusion).
+> Discrete diffusion models are especially relevant for domains where data is naturally categorical—such as pixels, words, or amino acids. Unlike continuous models, they can directly handle the inherent structure of these datasets, making them powerful tools for applications like protein design (RF Diffusion [cite: rf-diffusion]), molecular generation and text generation (Gemeni Diffusion).
 
 ---
 
-## My Approach: Building, Breaking, and Refining
+## My Approach
 
-My first step was to get a working model. I adapted an excellent open-source implementation of a discrete diffusion model and trained it on MNIST, discretising the grayscale pixel values into 32 classes. The core idea behind diffusion is simple: you start with a clear image, progressively add noise until it's unrecognizable, and then you train a neural network to reverse that process step-by-step. To generate a new image, you just give the trained model random noise and let it work its magic.
+My first step was to get a working model. I adapted an excellent [open-source implementation](https://github.com/cloneofsimo/d3pm/tree/main) of a discrete diffusion model and trained it on MNIST, discretising the grayscale pixel values into 32 classes. 
 
-Why go through this whole process?  
-The idea is that we want to sample data points from our distribution. Now generating data points from scratch is hard, but generating noise (random numbers) is easy, so if we learn a way to turn noise into data, we have effectively generated data samples from our distribution.
 
-After 400 epochs, my model was generating crisp, clear digits.
+> **Diffusion Background**  
+> The core idea behind diffusion is simple: you start with a clear image, progressively add noise until it's unrecognizable, and then you train a neural network to reverse that process step-by-step. To generate a new image, you just give the trained model random noise and let it work its magic.  
+> *Why go through this whole process?*  
+> The idea is that we want to sample data points from our distribution. Now generating data points from scratch is hard, but generating noise (random numbers) is easy, so if we learn a way to turn noise into data, we have effectively generated data samples from our distribution.
+
+After 400 epochs, my model was generating clear digits from every class.
 
 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end;">
     <div style="text-align: center;">
@@ -78,7 +81,7 @@ After 400 epochs, my model was generating crisp, clear digits.
     <div style="text-align: center;">
         <img src="/assets/img/discrete_diffusion/naive-deletion.png" alt="Naive Deletion" style="max-width: 100%; height: auto;">
         <br>
-        <small>Naive Deletion</small>
+        <small>Naive Deletion. Finetuned for 100 epochs, increasing from left to right, sampled every 10 epochs. </small>
     </div>
 </div>
 
@@ -94,23 +97,28 @@ I finetuned the model for 100 epochs on a new dataset containing 0 examples of t
 
 ## Attempt #2: Using Erased Stable Diffusion (ESD)
 
-I turned to existing research in the field, drawing inspiration from a technique called **Erased Stable Diffusion (ESD)**, which was originally designed for continuous models. I had to adapt its core principles for my discrete model.
+I turned to existing research in the field, drawing inspiration from a technique called **Erased Stable Diffusion (ESD)**, which was originally designed for continuous models and adapted it for discrete diffusion models.
 
 The idea behind ESD is to guide the model away from the concept you want to erase. Instead of just showing it examples of what to generate, you actively teach it what *not* to generate. This is done by modifying the training loss. At each step, you calculate a "deletion target" that pushes the model's prediction away from the unwanted class.
 
-The training objective I formulated was:
+The training objective is:
 
-\[
-\text{Loss} = \mathrm{MSE}\left( \text{model}_{\text{finetuned, conditional}} - \text{Deletion Target} \right)
-\]
+$$
+\mathcal{L} \;=\; \frac{1}{N}\big\lVert \mathbf{z}_{\mathrm{finetuned,cond}} - \mathbf{t}_{\mathrm{del}} \big\rVert_2^2
+$$
 
-Where the deletion target is calculated as:
+Where:
+$$
+\mathbf{t}_{\mathrm{del}} \;=\; \mathbf{z}_{\mathrm{orig,uncond}} \;-\; \alpha\big(\mathbf{z}_{\mathrm{orig,cond}} - \mathbf{z}_{\mathrm{orig,uncond}}\big)
+$$
 
-\[
-\text{Deletion Target} = \text{logits}_{\text{original, unconditioned}} - \alpha \cdot \left( \text{logits}_{\text{original, conditioned}} - \text{logits}_{\text{original, unconditioned}} \right)
-\]
+Or equivalently,
+$$
+\mathbf{t}_{\mathrm{del}} \;=\; (1+\alpha)\,\mathbf{z}_{\mathrm{orig,uncond}} \;-\; \alpha\,\mathbf{z}_{\mathrm{orig,cond}}
+$$
 
-Here, $\alpha$ (or `superfactor`) is a scalar that controls how strongly we want to erase the concept.
+
+Here, $\mathbf{z}$ represents the logits either conditioned on the concept we want to erase,$\mathbf{z}_{\mathrm{orig,cond}}$ or not conditioned  $\mathbf{z}_{\mathrm{orig,uncond}}$, and $\alpha$ (or `superfactor`) is a scalar that controls how strongly we want to erase the concept.
 
 My first experiment with this new loss function involved fine-tuning the *entire model*. The results were... not great. 
 
@@ -163,34 +171,30 @@ That led me to the **cross-attention layers**. In a conditional diffusion model 
     </div>
 </div>
 
-> Success! By fine-tuning only the cross-attention layers, the model stopped generating the target class while the quality of the other classes remained high.
+> This worked much better. By fine-tuning only the cross-attention layers, the model stopped generating the target class while the quality of the other classes remained high.
 
-By focusing the ESD loss solely on these layers, I was able to effectively sever the connection between the label '9' and its learned representation. The model forgot how to draw a '9' on command, while its knowledge of all other digits remained pristine. This worked remarkably well, even with only a fraction of the original training data used for the deletion process [cite: 150, 152].
+By focusing the ESD loss solely on these layers, I was able to effectively sever the connection between the label '9' and its learned representation. This worked remarkably well, even with only a fraction of the original training data used for the deletion process.
 
 ---
 
 ### Reflection
 
-This project was a fantastic learning experience, and not just on the technical front.
+This project was a great learning experience.
 
-* **The Math is Hard, but Intuition is Key:** I spent a lot of time buried in the complex mathematics of diffusion models. While understanding the theory is important, my breakthrough came from building an intuition about the model's architecture. My candid advice, and a note to my future self, is to not be afraid to "give up on the math earlier" and start experimenting when you hit a theoretical wall.
-* **Targeted Solutions are Often Best:** My initial, brute-force approaches failed because they were too disruptive. The success of fine-tuning only the cross-attention layers was a powerful lesson in the importance of understanding a system and intervening with precision.
-* **Challenges are Part of the Process:** From the initial poor results to the long hours spent waiting for models to fine-tune on my own GPU, this project had its share of challenges. Documenting and sharing these struggles is just as important as sharing the final success.
+* **The Math is Hard...** I spent a lot of time buried in the complex mathematics of diffusion models. While understanding the theory is important, i believe and a note to my future self, is to not be afraid to "give up on the math earlier" and start experimenting when you hit a theoretical wall and learn as you go.
+* **It might take a while** From the initial poor results to the long hours spent waiting for models to fine-tune on my own GPU, this project had its share of challenges. Documentation! tracking which runs are what and having a systematic way to train and evaluate is really important.
 
 ---
 
 ### Conclusion and Next Steps
 
-My key finding is that for discrete diffusion models, selectively fine-tuning the cross-attention layers is a powerful and efficient technique for concept erasure. It provides a pathway for modifying model behavior in a targeted way, which has significant implications for AI safety—from preventing the generation of harmful content to removing copyrighted data [cite: 94, 95, 96].
+My key finding is that for discrete diffusion models, selectively fine-tuning the cross-attention layers is a powerful and efficient technique for concept erasure. It provides a pathway for modifying model behavior in a targeted way, which has significant implications for AI safety—from preventing the generation of harmful content to removing copyrighted data.
 
-But this is just the beginning. I'm excited to extend this work to a more complex, real-world domain. I've already obtained a dataset of enzyme sequences and their functional classes. My next step is to train a discrete diffusion model to generate novel enzyme sequences and then use these unlearning techniques to erase specific functional classes. Imagine being able to tell a protein-generating model, "design a new enzyme, but nothing from the hydrolase family." The possibilities are incredibly exciting.
+But this is just the beginning. I'm excited to extend this work to a more complex, real-world domain. My next step is to train a discrete diffusion model to generate novel enzyme sequences and then use these unlearning techniques to erase specific functional classes.
 
-This project reinforced my belief that building safer and more controllable AI isn't just about creating better safeguards; it's also about developing the tools to fix models when they go wrong.
-
-If you're working on similar problems or have thoughts on this approach, I'd love to hear from you in the comments!
-
+Thank you for reading!
 ---
 
 **Resources:**
-* **Primary GitHub Repository Used:** [https://github.com/cloneofsimo/d3pm/tree/main](https://github.com/cloneofsimo/d3pm/tree/main) [cite: 135, 160]
+* **Primary GitHub Repository Used:** [https://github.com/cloneofsimo/d3pm/tree/main](https://github.com/cloneofsimo/d3pm/tree/main) 
 * **Relevant Paper:** [Erasing Concepts from Diffusion Models](https://arxiv.org/pdf/2303.07345) 
